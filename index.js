@@ -1,7 +1,6 @@
 var createLayout = require('layout-bmfont-text')
 var inherits = require('inherits')
 var createIndices = require('quad-indices')
-var buffer = require('three-buffer-vertex-data')
 var assign = require('object-assign')
 
 var vertices = require('./lib/vertices')
@@ -73,19 +72,10 @@ TextGeometry.prototype.update = function (opt) {
   })
 
   // update vertex data
-  buffer.index(this, indices, 1, 'uint16')
-  buffer.attr(this, 'position', positions, 2)
-  buffer.attr(this, 'uv', uvs, 2)
-
-  // update multipage data
-  if (!opt.multipage && 'page' in this.attributes) {
-    // disable multipage rendering
-    this.removeAttribute('page')
-  } else if (opt.multipage) {
-    var pages = vertices.pages(glyphs)
-    // enable multipage rendering
-    buffer.attr(this, 'page', pages, 1)
-  }
+  this.setIndex(new THREE.BufferAttribute(indices, 1));
+  this.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  this.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+  this.deleteAttribute('page');
 }
 
 TextGeometry.prototype.computeBoundingSphere = function () {
