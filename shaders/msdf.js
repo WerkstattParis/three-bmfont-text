@@ -1,61 +1,113 @@
 var assign = require('object-assign');
 
-module.exports = function createMSDFShader (opt) {
-  opt = opt || {};
-  var opacity = typeof opt.opacity === 'number' ? opt.opacity : 1;
-  var alphaTest = typeof opt.alphaTest === 'number' ? opt.alphaTest : 0.0001;
-  var precision = opt.precision || 'highp';
-  var color = opt.color;
-  var map = opt.map;
-  var negate = typeof opt.negate === 'boolean' ? opt.negate : true;
+module.exports = function createMSDFShader(opt) {
+    opt = opt || {};
+    var opacity = typeof opt.opacity === 'number' ? opt.opacity : 1;
+    var progress = typeof opt.progress === 'number' ? opt.progress : 1;
+    var alphaTest = typeof opt.alphaTest === 'number' ? opt.alphaTest : 0.0001;
+    var precision = opt.precision || 'highp';
+    var color = opt.color;
+    var map = opt.map;
+    var tMapFrom = opt.tMapFrom;
+    var tMapTo = opt.tMapTo;
+    var negate = typeof opt.negate === 'boolean' ? opt.negate : true;
 
-  // remove to satisfy r73
-  delete opt.map;
-  delete opt.color;
-  delete opt.precision;
-  delete opt.opacity;
-  delete opt.negate;
+    // remove to satisfy r73
+    delete opt.map
+    delete opt.color
+    delete opt.precision
+    delete opt.opacity
+    delete opt.tMapTo
+    delete opt.tMapFrom
+    delete opt.progress
 
-  return assign({
-    uniforms: {
-      opacity: { type: 'f', value: opacity },
-      map: { type: 't', value: map || new THREE.Texture() },
-      color: { type: 'c', value: new THREE.Color(color) }
-    },
-    vertexShader: [
-      'attribute vec2 uv;',
-      'attribute vec4 position;',
-      'uniform mat4 projectionMatrix;',
-      'uniform mat4 modelViewMatrix;',
-      'varying vec2 vUv;',
-      'void main() {',
-      'vUv = uv;',
-      'gl_Position = projectionMatrix * modelViewMatrix * position;',
-      '}'
-    ].join('\n'),
-    fragmentShader: [
-      '#ifdef GL_OES_standard_derivatives',
-      '#extension GL_OES_standard_derivatives : enable',
-      '#endif',
-      'precision ' + precision + ' float;',
-      'uniform float opacity;',
-      'uniform vec3 color;',
-      'uniform sampler2D map;',
-      'varying vec2 vUv;',
+    return assign({
+        uniforms: {
+            opacity: { type: 'f', value: opacity },
+            progress: { type: 'f', value: progress },
+            tMapFrom: { type: 't', value: tMapFrom || new THREE.Texture() },
+            tMapTo: { type: 't', value: tMapTo || new THREE.Texture() },
+            color: { type: 'c', value: new THREE.Color(color) }
+        },
 
-      'float median(float r, float g, float b) {',
-      '  return max(min(r, g), min(max(r, g), b));',
-      '}',
+        vertexShader: `
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+        uniform float progress;
 
-      'void main() {',
-      '  vec3 sample = ' + (negate ? '1.0 - ' : '') + 'texture2D(map, vUv).rgb;',
-      '  float sigDist = median(sample.r, sample.g, sample.b) - 0.5;',
-      '  float alpha = clamp(sigDist/fwidth(sigDist) + 0.5, 0.0, 1.0);',
-      '  gl_FragColor = vec4(color.xyz, alpha * opacity);',
-      alphaTest === 0
-        ? ''
-        : '  if (gl_FragColor.a < ' + alphaTest + ') discard;',
-      '}'
-    ].join('\n')
-  }, opt);
+        attribute vec2 uv;
+        attribute vec2 uvTo;
+        
+        attribute vec3 position;
+        attribute vec3 positionTo;
+
+        varying vec2 vUvFrom;
+        varying vec2 vUvTo;
+
+        void main() {
+
+            vUvFrom = uv;
+            vUvTo = uvTo;
+                
+            vec3 endPostion = mix(position, positionTo, progress );
+                
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(endPostion.xy, 0., 1.);
+        }`,
+
+        fragmentShader: `
+        #ifdef GL_OES_standard_derivatives
+        #extension GL_OES_standard_derivatives: enable
+        #endif
+
+        precision ${precision} float;
+
+        varying vec2 vUvFrom;
+        varying vec2 vUvTo;
+
+        uniform float progress;
+        uniform sampler2D tMapFrom;
+        uniform sampler2D tMapTo;
+
+        float fill(float sd) {
+            float aaf = fwidth(sd);
+            return smoothstep(aaf, -aaf, sd);
+        }
+
+        float median(vec3 rgb) {
+            return max(min(rgb.r, rgb.g), min(max(rgb.r, rgb.g), rgb.b));
+        }
+
+        float aastep(float value) {
+            // #ifdef GL_OES_standard_derivatives
+            float afwidth = length(vec2(dFdx(value), dFdy(value))) * 0.70710678118654757;
+            // #else
+            //     float afwidth = (1.0 / 500.0) * (1.4142135623730951 / (2.0 * gl_FragCoord.w));
+            // #endif
+            afwidth = length(vec2(dFdx(value), dFdy(value))) * 0.70710678118654757;
+            return smoothstep(0.5 - afwidth, 0.5 + afwidth, value);
+        }
+
+        float fill2(float sd) {
+            float aaf = fwidth(sd);
+            return smoothstep(aaf, -aaf, sd);
+        }
+
+        float median2(vec3 rgb) {
+            return max(min(rgb.r, rgb.g), min(max(rgb.r, rgb.g), rgb.b));
+        }
+
+        void main() {
+            // MSDF
+            float msdfSampleFrom = median(texture2D(tMapFrom, vUvFrom).rgb); //
+            float msdfSampleTo = median(texture2D(tMapTo, vUvTo).rgb);
+            float msdfSample = mix(msdfSampleFrom, msdfSampleTo, progress);
+            float alpha = aastep(msdfSample);
+            // float alpha = fill(0.5 - msdfSample);
+
+            // gl_FragColor = vec4(vec3(cos(progress), 1.-progress, progress), alpha);
+            gl_FragColor = vec4(vec3(1.,1.,0.), alpha);
+        }`
+
+
+    }, opt);
 };
