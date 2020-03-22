@@ -54,10 +54,10 @@ TextGeometry.prototype.update = function (opt) {
     this.visibleGlyphs = opt.visibleGlyphs;
     // update vertex data
     this.setIndex(opt.indices);
-    this.setAttribute('uv', opt.uvTo);
-    this.setAttribute('uvTo', opt.uvFrom);
-    this.setAttribute('position', opt.positionTo);
-    this.setAttribute('positionTo', opt.positionFrom);
+    this.setAttribute('uv', opt.uvFrom);
+    this.setAttribute('uvTo', opt.uvTo);
+    this.setAttribute('position', opt.positionFrom);
+    this.setAttribute('positionTo', opt.positionTo);
 
     this.deleteAttribute('page')
 }

@@ -1,7 +1,6 @@
 global.THREE = require('three')
-var createTextMSDF = require('../')
-var MSDFShader = require('../shaders/msdf')
-var fontLoader = require('../lib/font-loader.js')
+
+var FontTransition = require('./fontTransition.js');
 
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(9999, 9999);
@@ -111,10 +110,38 @@ var fontArray = [
     },
 ];
 
-fontLoader(fontArray, textArray, start);
+var TransBold2Thin = [
+    {
+        json: "fnt/werk/3/1.json",
+        texture: "fnt/werk/3/1.png",
+    },
+    {
+        json: "fnt/werk/3/2.json",
+        texture: "fnt/werk/3/2.png",
+    },
+    {
+        json: "fnt/werk/3/3.json",
+        texture: "fnt/werk/3/3.png",
+    },
+    {
+        json: "fnt/werk/3/4.json",
+        texture: "fnt/werk/3/4.png",
+    },
+    {
+        json: "fnt/werk/3/5.json",
+        texture: "fnt/werk/3/5.png",
+    },
+    {
+        json: "fnt/werk/3/6.json",
+        texture: "fnt/werk/3/6.png",
+    },
+]
+
+start();
 
 function start(font, texture) {
     camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / -2, window.innerHeight / 2, -1000, 1000);
+    camera.position.z = 100;
 
     var canvas = document.getElementById("canvas");
     scene = new THREE.Scene();
@@ -125,60 +152,27 @@ function start(font, texture) {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.innerWidth / window.innerHeight);
-
     
-    for (let j = 0; j < textArray.length; j++) { createGlyph(textArray[j], j); }
-    
+    //CREATE BOX MESH
     var geometry = new THREE.BoxGeometry(100, 100, 100);
     var material = new THREE.MeshBasicMaterial({ color: 0xf00000 });
     cube = new THREE.Mesh(geometry, material);
-    
-    camera.position.z = 100;
     scene.add(cube);
+
+    // //CREATE TEXT MESH
+    // for (let j = 0; j < textArray.length; j++) { createGlyph(textArray[j], j); }
+
+    function onMyTransitionLoaded(mesh) {
+        scene.add(mesh);
+    }
+    new FontTransition("MON TEXT", TransBold2Thin, onMyTransitionLoaded);
     
     renderer.setAnimationLoop(update.bind(this));
 
     window.addEventListener('mousemove', onMouseMove, false);
 }
 
-function mouseEnterFn(){
-    console.log('Mouse entered');
-}
-function mouseLeaveFn() {
-    console.log('Mouse leaved');
-}
-
-
-
 function update() {
-    //MY SHIT
-    textInstances.forEach((element, index) => {
-        element.material.realProg = element.material.realProg + 0.07;
-
-        let progress = (((Math.sin(element.material.realProg) + 1) / 2) * (fontArray.length - 1));
-
-        let modulo = progress % 1;
-        let nbr = Math.floor(progress);
-
-
-        if (nbr == fontArray.length) {
-            modulo = 0.999999;
-            nbr = fontArray.length;
-        }
-
-        element.material.uniforms.progress.value = modulo;
-
-        if ((nbr + 1) >= fontArray.length) return;
-
-        element.material.uniforms.tMapTo.value = textArray[index].data[nbr + 1].texture;
-        element.material.uniforms.tMapFrom.value = textArray[index].data[nbr].texture;
-        element.geometry.setAttribute('uvTo', textArray[index].data[nbr + 1].uvs);
-        element.geometry.setAttribute('uv', textArray[index].data[nbr].uvs);
-        element.geometry.setAttribute('positionTo', textArray[index].data[nbr + 1].positions);
-        element.geometry.setAttribute('position', textArray[index].data[nbr].positions);
-    });
-    
-
     //RAYCASTER
     raycaster.setFromCamera(mouse, camera);
     var intersects = raycaster.intersectObjects(textInstances);
@@ -211,44 +205,6 @@ function onMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 }
-
-function createGlyph(element, index) {
-    var geom = createTextMSDF({
-        indices: element.data[0].indices,
-        positionFrom: element.data[1].positions,
-        positionTo: element.data[0].positions,
-        layout: element.data[0].layout,
-        uvFrom: element.data[1].uvs,
-        uvTo: element.data[0].uvs,
-        visibleGlyphs: element.data[0].visibleGlyphs
-    })
-
-    let raw = new THREE.RawShaderMaterial(MSDFShader({
-        tMapFrom: element.data[1].texture,
-        tMapTo: element.data[0].texture,
-        side: THREE.DoubleSide,
-        transparent: true,
-        progress: 0,
-        negate: true,
-        color: 0xfffffff,
-    }))
-
-    raw.realProg = 0;
-    mesTexts.push(raw);
-
-    // var hauteurLigne = geom.layout
-    var text = new THREE.Mesh(geom, raw)
-    text.position.y = Math.random() * 400;
-    text.scale.multiplyScalar(1);
-    
-    text.mouseEnterFn = mouseEnterFn;
-    text.mouseLeaveFn = mouseLeaveFn;
-    
-    textInstances.push(text);
-    scene.add(text);
-
-}
-
 
 function mouseEnterFn() {
     console.log('Mouse entered');
