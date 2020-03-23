@@ -1,10 +1,11 @@
 global.THREE = require('three')
 
-var FontTransition = require('./fontTransition.js');
+var FontVariableGL = require('./FontVariableGL.js');
 
 var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2(9999, 9999);
 let scene, camera, renderer, text, cube, INTERSECTED;
+let inc = 0;
 
 var textInstances = [];
 var mesTexts = [];
@@ -83,34 +84,7 @@ var textArray = [
     // {text: `ABEAZECABEAZECAB` }
 ]
 
-var fontArray = [
-    {
-        font: 'fnt/werk/3/1.json',
-        image: 'fnt/werk/3/1.png'
-    },
-    {
-        font: 'fnt/werk/3/2.json',
-        image: 'fnt/werk/3/2.png'
-    },
-    {
-        font: 'fnt/werk/3/3.json',
-        image: 'fnt/werk/3/3.png'
-    },
-    {
-        font: 'fnt/werk/3/4.json',
-        image: 'fnt/werk/3/4.png'
-    },
-    {
-        font: 'fnt/werk/3/5.json',
-        image: 'fnt/werk/3/5.png'
-    },
-    {
-        font: 'fnt/werk/3/6.json',
-        image: 'fnt/werk/3/6.png'
-    },
-];
-
-var TransBold2Thin = [
+var TransThin2Bold = [
     {
         json: "fnt/werk/3/1.json",
         texture: "fnt/werk/3/1.png",
@@ -135,6 +109,71 @@ var TransBold2Thin = [
         json: "fnt/werk/3/6.json",
         texture: "fnt/werk/3/6.png",
     },
+]
+
+var TransOther = [
+    {
+        json: "fnt/werk/2/1.json",
+        texture: "fnt/werk/2/1.png",
+    },
+    {
+        json: "fnt/werk/2/2.json",
+        texture: "fnt/werk/2/2.png",
+    },
+    {
+        json: "fnt/werk/2/3.json",
+        texture: "fnt/werk/2/3.png",
+    },
+    {
+        json: "fnt/werk/2/4.json",
+        texture: "fnt/werk/2/4.png",
+    }
+]
+
+var TransThin2Bold2 = [
+    {
+        json: "fnt/werk/3/1.json",
+        texture: "fnt/werk/3/1.png",
+    },
+    {
+        json: "fnt/werk/3/2.json",
+        texture: "fnt/werk/3/2.png",
+    },
+    {
+        json: "fnt/werk/3/3.json",
+        texture: "fnt/werk/3/3.png",
+    },
+    {
+        json: "fnt/werk/3/4.json",
+        texture: "fnt/werk/3/4.png",
+    },
+    {
+        json: "fnt/werk/3/5.json",
+        texture: "fnt/werk/3/5.png",
+    },
+    {
+        json: "fnt/werk/3/6.json",
+        texture: "fnt/werk/3/6.png",
+    },
+]
+
+var TransOther2 = [
+    {
+        json: "fnt/werk/2/1.json",
+        texture: "fnt/werk/2/1.png",
+    },
+    {
+        json: "fnt/werk/2/2.json",
+        texture: "fnt/werk/2/2.png",
+    },
+    {
+        json: "fnt/werk/2/3.json",
+        texture: "fnt/werk/2/3.png",
+    },
+    {
+        json: "fnt/werk/2/4.json",
+        texture: "fnt/werk/2/4.png",
+    }
 ]
 
 start();
@@ -165,7 +204,32 @@ function start(font, texture) {
     function onMyTransitionLoaded(mesh) {
         scene.add(mesh);
     }
-    new FontTransition("MON TEXT", TransBold2Thin, onMyTransitionLoaded);
+    textInstances.push(new FontVariableGL(
+        "MON TEXT", 
+        [
+            {
+                name: 'Thin2Bold',
+                steps: TransThin2Bold,
+                nbrStep: 6
+            }, 
+            {
+                name: 'Other',
+                steps: TransOther,
+                nbrStep: 4
+            }
+        ],
+    onMyTransitionLoaded) );
+
+    textInstances.push(new FontVariableGL(
+        "MON TEXT 2",
+        [
+            {
+                name: 'Thin2Bold',
+                steps: TransOther2,
+                nbrStep: 4
+            }
+        ],
+        onMyTransitionLoaded));
     
     renderer.setAnimationLoop(update.bind(this));
 
@@ -173,30 +237,38 @@ function start(font, texture) {
 }
 
 function update() {
-    //RAYCASTER
-    raycaster.setFromCamera(mouse, camera);
-    var intersects = raycaster.intersectObjects(textInstances);
-
-    for (let i = 0; i < intersects.length; i++) {
-        // console.log(intersects[i].object.mouseEnterFn());
-    }
-
-    if (intersects.length > 0) {
-
-        if (INTERSECTED != intersects[0].object) {
-
-            if (INTERSECTED) {
-                console.log("Enter in the first INTERSECTED");
-            }
-            INTERSECTED = intersects[0].object;
-            INTERSECTED.mouseEnterFn()
-
+    inc+= .008;
+    textInstances.forEach((textInstance)=>{
+        textInstance.progress = (Math.sin(inc) + 1) / 2;
+        if (!!textInstance.mesh) {
+            textInstance.render();
         }
+    })
+    
+    //RAYCASTER
+    // raycaster.setFromCamera(mouse, camera);
+    // var intersects = raycaster.intersectObjects(textInstances);
 
-    } else {
-        if (INTERSECTED) INTERSECTED.mouseLeaveFn()
-        INTERSECTED = null;
-    }
+    // for (let i = 0; i < intersects.length; i++) {
+    //     // console.log(intersects[i].object.mouseEnterFn());
+    // }
+
+    // if (intersects.length > 0) {
+
+    //     if (INTERSECTED != intersects[0].object) {
+
+    //         if (INTERSECTED) {
+    //             console.log("Enter in the first INTERSECTED");
+    //         }
+    //         INTERSECTED = intersects[0].object;
+    //         INTERSECTED.mouseEnterFn()
+
+    //     }
+
+    // } else {
+    //     if (INTERSECTED) INTERSECTED.mouseLeaveFn()
+    //     INTERSECTED = null;
+    // }
 
     renderer.render(scene, camera);
 };
