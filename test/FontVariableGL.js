@@ -1,33 +1,25 @@
 var createTextMSDF = require('..')
 var MSDFShader = require('../shaders/msdf')
-var fontLoader = require('../lib/font-loader.js')
+var collector = require('../dataCollector.js')
+
 
 module.exports = class FontVariableGL {
-    constructor(text, arrayTansition, cb) {
-        this.loaded = 0;
-        this.cb = cb;
+    constructor(text, arrayTansition) {
         this.text = text;
-        this.arrayTransition = arrayTansition;
         this.progress = 0;
-        this.nbrTransition = this.arrayTransition.length;
 
         this.geometry = null;
         this.material = null;
-        this.currentTransition = this.arrayTransition[0];
-
-        this.arrayTransition.forEach((transition, index) => {
-            this.arrayTransition[index] = new FontTransition(this.text, transition, this.onTransitionLoaded.bind(this))
+        
+        
+        arrayTansition.forEach((transition, index) => {
+            arrayTansition[index] = new TextTransition(this.text, transition);
         })
+        this.currentTransition = arrayTansition[0];
+
+        this.createMesh();
     }
 
-    onTransitionLoaded(){
-        this.loaded++;
-        if (this.loaded >= this.nbrTransition) {
-            this.loaded = 0;
-            this.arrayTransition;
-            this.createMesh();
-        }
-    }
 
     render() {
         let globalProgress = this.progress * (this.currentTransition.nbrStep - 1);
@@ -41,30 +33,29 @@ module.exports = class FontVariableGL {
         this.mesh.material.uniforms.progress.value = modulo;
 
         if ((nbr + 1) >= this.currentTransition.nbrStep) return;
-        
-
-        this.mesh.material.uniforms.tMapTo.value = this.currentTransition.steps[nbr+1].texture;
-        this.mesh.material.uniforms.tMapFrom.value = this.currentTransition.steps[nbr].texture;
-        this.mesh.geometry.setAttribute('uvTo', this.currentTransition.steps[nbr+1].data.uvs);
-        this.mesh.geometry.setAttribute('uv', this.currentTransition.steps[nbr].data.uvs);
-        this.mesh.geometry.setAttribute('positionTo', this.currentTransition.steps[nbr+1].data.positions);
-        this.mesh.geometry.setAttribute('position', this.currentTransition.steps[nbr].data.positions);
+    
+        this.mesh.material.uniforms.tMapTo.value = this.currentTransition.arrayFontSteps[nbr+1].texture;
+        this.mesh.material.uniforms.tMapFrom.value = this.currentTransition.arrayFontSteps[nbr].texture;
+        this.mesh.geometry.setAttribute('uvTo', this.currentTransition.arrayFontSteps[nbr+1].uvs);
+        this.mesh.geometry.setAttribute('uv', this.currentTransition.arrayFontSteps[nbr].uvs);
+        this.mesh.geometry.setAttribute('positionTo', this.currentTransition.arrayFontSteps[nbr+1].positions);
+        this.mesh.geometry.setAttribute('position', this.currentTransition.arrayFontSteps[nbr].positions);
     }
 
     createMesh() {
         this.geometry = createTextMSDF({
-            indices: this.currentTransition.steps[0].data.indices,
-            positionFrom: this.currentTransition.steps[0].data.positions,
-            positionTo: this.currentTransition.steps[1].data.positions,
-            layout: this.currentTransition.steps[0].data.layout,
-            uvFrom: this.currentTransition.steps[0].data.uvs,
-            uvTo: this.currentTransition.steps[1].data.uvs,
-            visibleGlyphs: this.currentTransition.steps[0].data.visibleGlyphs
+            indices: this.currentTransition.arrayFontSteps[0].indices,
+            positionFrom: this.currentTransition.arrayFontSteps[0].positions,
+            positionTo: this.currentTransition.arrayFontSteps[1].positions,
+            layout: this.currentTransition.arrayFontSteps[0].layout,
+            uvFrom: this.currentTransition.arrayFontSteps[0].uvs,
+            uvTo: this.currentTransition.arrayFontSteps[1].uvs,
+            visibleGlyphs: this.currentTransition.arrayFontSteps[0].visibleGlyphs
         })
         
         this.material = new THREE.RawShaderMaterial(MSDFShader({
-            tMapFrom: this.currentTransition.steps[0].texture,
-            tMapTo: this.currentTransition.steps[1].texture,
+            tMapFrom: this.currentTransition.arrayFontSteps[0].texture,
+            tMapTo: this.currentTransition.arrayFontSteps[1].texture,
             side: THREE.DoubleSide,
             transparent: true,
             progress: 0,
@@ -75,37 +66,29 @@ module.exports = class FontVariableGL {
         // var hauteurLigne = geom.layout
         this.mesh = new THREE.Mesh(this.geometry, this.material);
 
-        this.mesh.position.y = Math.random() * 400;
+        this.mesh.position.y = Math.random()*400;
         this.mesh.scale.multiplyScalar(1);
 
         // this.mesh.mouseEnterFn = mouseEnterFn;
         // this.mesh.mouseLeaveFn = mouseLeaveFn;
-
-        this.cb(this.mesh);
     }
 }
 
-class FontTransition {
-    constructor(text, json, cb) {
-        this.name = json.name;
-        this.arrayFontSteps = json.steps;
-        this.nbrStep = this.arrayFontSteps.length;
-        this.loaded = 0;
-        this.cb = cb;
-
-        //Laod every font step
-        this.arrayFontSteps.forEach((fontStep, index) => {
-            fontLoader(text, fontStep.json, fontStep.texture, function (obj) {
-                this.onFontLoaded(obj, index);
-            }.bind(this));
-        })
-    }
-
-    onFontLoaded(obj, index) {
-        this.arrayFontSteps[index] = obj;
-        this.loaded++;
+class TextTransition {
+    constructor( text, transition) {
+        // Transition
+        this.arrayFontSteps = [];
+        this.nbrStep = transition.array.length;
         
-        //When all steps of font are ready 
-        if (this.loaded >= this.nbrStep) this.cb();
+
+        for (let index = 0; index < transition.array.length; index++) {
+            this.arrayFontSteps[index] = collector({
+                text: text,
+                font: transition.array[index].json,
+                align: 'left',
+                flipY: transition.array[index].texture.flipY
+            });
+            this.arrayFontSteps[index].texture = transition.array[index].texture;
+        }
     }
 }
