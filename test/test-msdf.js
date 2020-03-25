@@ -1,180 +1,106 @@
 global.THREE = require('three')
 
-THREE.Cache.enabled = true;
+let FontVariableGL = require('./FontVariableGL.js');
+let FontTransitions = require('./FontTransitions.js');
 
-var FontVariableGL = require('./FontVariableGL.js');
-var FontTransitions = require('./FontTransitions.js');
-
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2(9999, 9999);
-let scene, camera, renderer, text, cube, INTERSECTED;
+let raycaster = new THREE.Raycaster();
+let mouse = new THREE.Vector2(9999, 9999);
+let scene, camera, renderer;
 let inc = 0;
+let nbrTransitionLoaded = 0;
 
-var textInstances = [];
-var textArray = [
-    `ABCDEFGHIJKLMNOPQR` ,
-    `BCDEFGHIJKLMNOPQRS` ,
-    // `CDEFGHIJKLMNOPQ` ,
-    // `DEFGHIJKLMNOPQR` ,
-    // `EFGHIJKLMNOPQRS` ,
-    // `FGHIJKLMNOPQRST` ,
-    // `GHIJKLMNOPAPQRS` ,
-    // `EFGHIJKLMNOPQRS` ,
-    // `EFZFEFEFZFEFEFZF` ,
-    // `SFDFDSVSFDFDSVSF` ,
-    // `ZFZEFZFZEFZFZEFZ` ,
-    // `NFGFBNFGFBNFGFBN` ,
-    // `VSDVSDVVSDVSDVVS` ,
-    // `CQSCQSCCQSCQSCCQ` ,
-    // `XCVVXCVXCVVXCVXC` ,
-    // `EZFZEFZEZFZEFZEZ` ,
-    // `NYTNTNYTNTNYTNTN` ,
-    // `OILOIOILOIOILOIO` ,
-    // `NJYYGNNJYYGNNJYY` ,
-    // `NGBFTGDRNGBFTGDR` ,
-    // `FRDFDRFRDFDRFRDF` ,
-    // `SEDSQESEDSQESEDS` ,
-    // `SDVSDVSDVSDVSDVS` ,
-    // `CGBFDGBCGBFDGBCG` ,
-    // `CSDCCSDCCSDCCSDC` ,
-    // `ABEAZECABEAZECAB` ,
-    // `ABSDFCABSDFCABSD` ,
-    // `VXCVVXCVVXCVVXCV` ,
-    // `HFJTYJHFJTYJHFJT` ,
-    // `KUYJYTKUYJYTKUYJ` ,
-    // `BVNNGHBVNNGHBVNN` ,
-    // `KHYKUIKHYKUIKHYK` ,
-    // `YTIIUYTIIUYTIIUY` ,
-    // `ILUIOLILUIOLILUI` ,
-    // `OLOMPOLOMPOLOMPO` ,
-    // `JUDGRDFJUDGRDFJU` ,
-    // `SEFRGSEFRGSEFRGS` ,
-    // `VFXVFGNVFXVFGNVF` ,
-    // `VXFVDCVXFVDCVXFV` ,
-    // `SDFFGBSDFFGBSDFF` ,
-    // `DFVDRDDFVDRDDFVD`,
-    // `XDVSXDVSXDVSXDVS`,
-    // `ABCABCABCABCOIDI` ,
-    // `KAPDKAPDKAPDKAPD` ,
-    // `POAJKZPOAJKZPOAJ` ,
-    // `LKZQSALKZQSALKZQ` ,
-    // `DFEZFDFEZFDFEZFD` ,
-    // `TRHTRTRHTRTRHTRT` ,
-    // `CXVXCVCXVXCVCXVX` ,
-    // `QSCQSCQSCQSCQSCQ` ,
-    // `EAZEAZEAZEAZEAZE` ,
-    // `EFFEFFEFFEFFZDQZ` ,
-    // `CXVXCVCXVXCVCXVX` ,
-    // `RTHRTGRTHRTGRTHR` ,
-    // `EFZFEFEFZFEFEFZF` ,
-    // `SFDFDSVSFDFDSVSF` ,
-    // `ZFZEFZFZEFZFZEFZ` ,
-    // `NFGFBNFGFBNFGFBN` ,
-    // `VSDVSDVVSDVSDVVS` ,
-    // `CQSCQSCCQSCQSCCQ` ,
-    // `XCVVXCVXCVVXCVXC` ,
-    // `EZFZEFZEZFZEFZEZ` ,
-    // `NYTNTNYTNTNYTNTN` ,
-    // `OILOIOILOIOILOIO` ,
-    // `NJYYGNNJYYGNNJYY` ,
-    // `NGBFTGDRNGBFTGDR` ,
-    // `FRDFDRFRDFDRFRDF` ,
-    // `SEDSQESEDSQESEDS` ,
-    // `SDVSDVSDVSDVSDVS` ,
-    // `CGBFDGBCGBFDGBCG` ,
-    // `CSDCCSDCCSDCCSDC`
+let textInstances = [];
+const textArray = [
+    `DIRECTORS`,
+    `ABOUT`,
+    `NEWS`,
+    `ALLAN`,
+    `RAQUIN`,
+    `THREE BM FONT`,
+    `VARIABLE FONT`,
+    `THREEJS`
 ]
 
 start();
 
-function start(font, texture) {
+function start() {
     camera = new THREE.OrthographicCamera(window.innerWidth / -2, window.innerWidth / 2, window.innerHeight / -2, window.innerHeight / 2, -1000, 1000);
     camera.position.z = 100;
 
-    var canvas = document.getElementById("canvas");
     scene = new THREE.Scene();
+
     renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
+        canvas: document.getElementById("canvas"),
         scene: scene,
         antialias: false
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.innerWidth / window.innerHeight);
-    
-    //CREATE BOX MESH
-    var geometry = new THREE.BoxGeometry(100, 100, 100);
-    var material = new THREE.MeshBasicMaterial({ color: 0xf00000 });
-    cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
 
 
     FontTransitions.setRendererPreload(renderer);
     FontTransitions.addFontTransition('thin2bold',
         [
-            { json: "fnt/werk/3/1.json", texture: "fnt/werk/3/1.png" },
-            { json: "fnt/werk/3/2.json", texture: "fnt/werk/3/2.png" },
-            { json: "fnt/werk/3/3.json", texture: "fnt/werk/3/3.png" },
-            { json: "fnt/werk/3/4.json", texture: "fnt/werk/3/4.png" },
-            { json: "fnt/werk/3/5.json", texture: "fnt/werk/3/5.png" },
-            { json: "fnt/werk/3/6.json", texture: "fnt/werk/3/6.png" }
+            { json: "fnt/werk/4/1.json", texture: "fnt/werk/4/1.png" },
+            { json: "fnt/werk/4/2.json", texture: "fnt/werk/4/2.png" },
+            { json: "fnt/werk/4/3.json", texture: "fnt/werk/4/3.png" },
+            // { json: "fnt/werk/4/4.json", texture: "fnt/werk/4/4.png" },
+            // { json: "fnt/werk/4/5.json", texture: "fnt/werk/4/5.png" },
+            // { json: "fnt/werk/4/6.json", texture: "fnt/werk/4/6.png" }
         ],
-        createTextsMesh
+        onTransitionLoaded
     );
-
-    renderer.setAnimationLoop(update.bind(this));
+    FontTransitions.addFontTransition('thin2bold2',
+        [
+            // { json: "fnt/werk/4/1.json", texture: "fnt/werk/4/1.png" },
+            // { json: "fnt/werk/4/2.json", texture: "fnt/werk/4/2.png" },
+            // { json: "fnt/werk/4/3.json", texture: "fnt/werk/4/3.png" },
+            { json: "fnt/werk/4/4.json", texture: "fnt/werk/4/4.png" },
+            { json: "fnt/werk/4/5.json", texture: "fnt/werk/4/5.png" },
+            { json: "fnt/werk/4/6.json", texture: "fnt/werk/4/6.png" }
+        ],
+        onTransitionLoaded
+    );
 
     window.addEventListener('mousemove', onMouseMove, false);
 }
+function onTransitionLoaded(){
+    nbrTransitionLoaded++;
+    if( nbrTransitionLoaded < 2) return;
 
-function createTextsMesh(){
-    textArray.forEach((text)=>{
-        textInstances.push(new FontVariableGL(
+    textArray.forEach((text, index)=>{
+        let instance = new FontVariableGL(
             text,
-            [FontTransitions.getFontTransition('thin2bold')],
-        ));
+            [FontTransitions.getFontTransition('thin2bold'), FontTransitions.getFontTransition('thin2bold2')],
+            function () { console.log('mouseEnter') },
+            function () { console.log('mouseLeave') },
+        );
+        instance.mesh.position.x = -window.innerWidth / 2;
+        instance.mesh.position.y = (-window.innerHeight / 2) + (100 * (index + 1));
+        instance.mesh.scale.multiplyScalar(1);
+        scene.add(instance.mesh);
+        textInstances.push( instance );
     })
 
-    textInstances.forEach((instance)=>{
-        scene.add(instance.mesh);
-    })
+    renderer.setAnimationLoop(update.bind(this));
 }
 
 function update() {
-    inc+= .005;
-    textInstances.forEach((textInstance)=>{
-        // if (inc > 5.5) {
-        //     textInstance.currentTransition = textInstance.arrayTransition[0];
-        // }
-        textInstance.progress = (Math.sin(inc) + 1) / 2;
-        if (!!textInstance.mesh) {
-            textInstance.render();
-        }
+    inc+= .15;
+    textInstances.forEach((textInstance, index)=>{
+        textInstance.setProgress((Math.sin(inc + (index / 1)) + 1) / 2 );
+        // if (textInstancesetP> 0.5 ) { textInstance.currentTransition = textInstance.arrayTansition[1]; }
     })
     
     //RAYCASTER
-    // raycaster.setFromCamera(mouse, camera);
-    // var intersects = raycaster.intersectObjects(textInstances);
-
-    // for (let i = 0; i < intersects.length; i++) {
-    //     // console.log(intersects[i].object.mouseEnterFn());
-    // }
-
-    // if (intersects.length > 0) {
-
-    //     if (INTERSECTED != intersects[0].object) {
-
-    //         if (INTERSECTED) {
-    //             console.log("Enter in the first INTERSECTED");
-    //         }
-    //         INTERSECTED = intersects[0].object;
-    //         INTERSECTED.mouseEnterFn()
-
-    //     }
-
-    // } else {
-    //     if (INTERSECTED) INTERSECTED.mouseLeaveFn()
-    //     INTERSECTED = null;
-    // }
+    raycaster.setFromCamera(mouse, camera);
+    for (let index = 0; index < textInstances.length; index++) {
+        if( raycaster.intersectObject(textInstances[index].mesh).length > 0 ){
+            textInstances[index].mouseEnter()
+        }else{
+            textInstances[index].mouseLeave()
+        }
+    }
 
     renderer.render(scene, camera);
 };
@@ -182,11 +108,4 @@ function update() {
 function onMouseMove(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-}
-
-function mouseEnterFn() {
-    console.log('Mouse entered');
-}
-function mouseLeaveFn() {
-    console.log('Mouse leaved');
 }

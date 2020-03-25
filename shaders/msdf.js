@@ -6,15 +6,11 @@ module.exports = function createMSDFShader(opt) {
     var progress = typeof opt.progress === 'number' ? opt.progress : 1;
     var alphaTest = typeof opt.alphaTest === 'number' ? opt.alphaTest : 0.0001;
     var precision = opt.precision || 'highp';
-    var color = opt.color;
-    var map = opt.map;
     var tMapFrom = opt.tMapFrom;
     var tMapTo = opt.tMapTo;
-    var negate = typeof opt.negate === 'boolean' ? opt.negate : true;
 
     // remove to satisfy r73
     delete opt.map
-    delete opt.color
     delete opt.precision
     delete opt.opacity
     delete opt.tMapTo
@@ -27,7 +23,6 @@ module.exports = function createMSDFShader(opt) {
             progress: { type: 'f', value: progress },
             tMapFrom: { type: 't', value: tMapFrom || new THREE.Texture() },
             tMapTo: { type: 't', value: tMapTo || new THREE.Texture() },
-            color: { type: 'c', value: new THREE.Color(color) }
         },
 
         vertexShader: `
@@ -83,19 +78,9 @@ module.exports = function createMSDFShader(opt) {
             // #else
             //     float afwidth = (1.0 / 500.0) * (1.4142135623730951 / (2.0 * gl_FragCoord.w));
             // #endif
-            afwidth = length(vec2(dFdx(value), dFdy(value))) * 0.70710678118654757;
             return smoothstep(0.5 - afwidth, 0.5 + afwidth, value);
         }
-
-        float fill2(float sd) {
-            float aaf = fwidth(sd);
-            return smoothstep(aaf, -aaf, sd);
-        }
-
-        float median2(vec3 rgb) {
-            return max(min(rgb.r, rgb.g), min(max(rgb.r, rgb.g), rgb.b));
-        }
-
+        
         void main() {
             // MSDF
             float msdfSampleFrom = median(texture2D(tMapFrom, vUvFrom).rgb); //
@@ -104,8 +89,7 @@ module.exports = function createMSDFShader(opt) {
             float alpha = aastep(msdfSample);
             // float alpha = fill(0.5 - msdfSample);
 
-            // gl_FragColor = vec4(vec3(cos(progress), 1.-progress, progress), alpha);
-            gl_FragColor = vec4(vec3(1.,1.,0.), alpha);
+            gl_FragColor = vec4(vec3(1.,1.,1.), alpha);
         }`
 
 

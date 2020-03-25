@@ -4,10 +4,13 @@ var instanceOurRenderer;
 
 class FontTransitions {
     constructor() {
+        //Activate THREE cache for texture load
+        THREE.Cache.enabled = true;
         this.fontList = {};
     }
 
     setRendererPreload(renderer){
+        //This is used to pre-render texture
         instanceOurRenderer = renderer
     }
 
@@ -62,12 +65,10 @@ class Font {
         this.loadImage(this.texture);
     }
 
-    //LOAD TEXTURE
     loadImage(image) {
         new THREE.TextureLoader().load(image, this.onImageLoaded.bind(this) );
     }
 
-    //LOAD FONT
     loadFontJson(font) {
         loadFont(font, this.onFontLoaded.bind(this));
     }

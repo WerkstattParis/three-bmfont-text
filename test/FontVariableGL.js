@@ -4,22 +4,39 @@ var collector = require('../dataCollector.js')
 
 
 module.exports = class FontVariableGL {
-    constructor(text, arrayTansition) {
+    constructor(text, arrayTansition, mouseEnterFn, mouseLeaveFn) {
         this.text = text;
         this.progress = 0;
+        this.hovered = false;
 
         this.geometry = null;
         this.material = null;
-        
-        
-        arrayTansition.forEach((transition, index) => {
-            arrayTansition[index] = new TextTransition(this.text, transition);
-        })
-        this.currentTransition = arrayTansition[0];
+        this.arrayTansition = arrayTansition;
 
+        this.mouseEnterFn = mouseEnterFn;
+        this.mouseLeaveFn = mouseLeaveFn;
+        
+        this.arrayTansition.forEach((transition, index) => {
+            this.arrayTansition[index] = new TextTransition(this.text, transition);
+        });
+
+        this.currentTransition = this.arrayTansition[0];
         this.createMesh();
     }
 
+    mouseEnter(){
+        if ( !this.hovered ){
+            this.hovered = true;
+            this.mouseEnterFn();
+        }
+    }
+
+    mouseLeave() {
+        if (this.hovered) {
+            this.hovered = false;
+            this.mouseLeaveFn();
+        }
+    }
 
     render() {
         let globalProgress = this.progress * (this.currentTransition.nbrStep - 1);
@@ -42,6 +59,11 @@ module.exports = class FontVariableGL {
         this.mesh.geometry.setAttribute('position', this.currentTransition.arrayFontSteps[nbr].positions);
     }
 
+    setProgress(progress){
+        this.progress = progress;
+        this.render();
+    }
+
     createMesh() {
         this.geometry = createTextMSDF({
             indices: this.currentTransition.arrayFontSteps[0].indices,
@@ -59,18 +81,10 @@ module.exports = class FontVariableGL {
             side: THREE.DoubleSide,
             transparent: true,
             progress: 0,
-            negate: true,
-            color: 0xfffffff,
         }))
 
         // var hauteurLigne = geom.layout
         this.mesh = new THREE.Mesh(this.geometry, this.material);
-
-        this.mesh.position.y = Math.random()*400;
-        this.mesh.scale.multiplyScalar(1);
-
-        // this.mesh.mouseEnterFn = mouseEnterFn;
-        // this.mesh.mouseLeaveFn = mouseLeaveFn;
     }
 }
 
