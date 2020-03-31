@@ -53,7 +53,7 @@ function start() {
         antialias: false
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.innerWidth / window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
 
 
     FontTransitions.setRendererPreload(renderer);
@@ -271,11 +271,14 @@ function start() {
 function onTransitionLoaded() {
     nbrTransitionLoaded++;
     if (nbrTransitionLoaded < 10) return;
-    /*
+
+    console.log(window.devicePixelRatio);
+
+
     textArray.forEach((text, index) => {
         let instance = new FontVariableGL(
             text,
-            [FontTransitions.getFontTransition('ThinCondensed_to_BoldCondensed')],
+            [FontTransitions.getFontTransition('Bold_to_Light')],
             function () {
                 console.log('mouseEnter')
             },
@@ -289,9 +292,9 @@ function onTransitionLoaded() {
         scene.add(instance.mesh);
         textInstances.push(instance);
     })
-    */
 
 
+    /*
     transitions.forEach((transition, mainIndex) => {
         textArray.forEach((text, index) => {
             console.log(transition, mainIndex);
@@ -315,6 +318,7 @@ function onTransitionLoaded() {
             textInstances.push(instance);
         })
     })
+    */
 
 
     renderer.setAnimationLoop(update.bind(this));
