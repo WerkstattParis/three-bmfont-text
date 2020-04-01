@@ -299,13 +299,31 @@ function start() {
     );
 
 
+    FontTransitions.addFontTransition('NormalWide_to_ThinCondensed',
+        [{
+                json: "fnt/transitions/NormalWide_to_ThinCondensed/300_100.json",
+                texture: "fnt/transitions/NormalWide_to_ThinCondensed/300_100.png"
+            },
+            {
+                json: "fnt/transitions/NormalWide_to_ThinCondensed/200_50.json",
+                texture: "fnt/transitions/NormalWide_to_ThinCondensed/200_50.png"
+            },
+            {
+                json: "fnt/transitions/NormalWide_to_ThinCondensed/140_1.json",
+                texture: "fnt/transitions/NormalWide_to_ThinCondensed/140_1.png"
+            },
+        ],
+        onTransitionLoaded
+    );
+
+
 
     window.addEventListener('mousemove', onMouseMove, false);
 }
 
 function onTransitionLoaded() {
     nbrTransitionLoaded++;
-    if (nbrTransitionLoaded < 12) return;
+    if (nbrTransitionLoaded < 13) return;
 
     console.log(window.devicePixelRatio);
 
@@ -313,7 +331,7 @@ function onTransitionLoaded() {
     textArray.forEach((text, index) => {
         let instance = new FontVariableGL(
             text,
-            [FontTransitions.getFontTransition('LightCondensed_to_ThinCondensed')],
+            [FontTransitions.getFontTransition('NormalWide_to_ThinCondensed')],
             function () {
                 console.log('mouseEnter')
             },

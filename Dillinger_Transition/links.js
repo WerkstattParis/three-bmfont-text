@@ -197,3 +197,20 @@ FontTransitions.addFontTransition('LightCondensed_to_ThinCondensed',
     ],
     onTransitionLoaded
 );
+
+FontTransitions.addFontTransition('NormalWide_to_ThinCondensed',
+    [{
+            json: `${PATH}/NormalWide_to_ThinCondensed/300_100.json`,
+            texture: `${PATH}/NormalWide_to_ThinCondensed/300_100.png`
+        },
+        {
+            json: `${PATH}/NormalWide_to_ThinCondensed/200_50.json`,
+            texture: `${PATH}/NormalWide_to_ThinCondensed/200_50.png`
+        },
+        {
+            json: `${PATH}/NormalWide_to_ThinCondensed/140_1.json`,
+            texture: `${PATH}/NormalWide_to_ThinCondensed/140_1.png`
+        },
+    ],
+    onTransitionLoaded
+);
