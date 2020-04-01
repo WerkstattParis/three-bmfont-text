@@ -86,20 +86,20 @@ FontTransitions.addFontTransition('Wide_to_Condensed',
 
 FontTransitions.addFontTransition('BoldNormal_to_ThinCondensed',
     [{
-            json: `${PATH}/BoldNormal_to_ThinCondensed/40_900.json`,
-            texture: `${PATH}/BoldNormal_to_ThinCondensed/40_900.png`
+            json: `${PATH}/BoldNormal_to_ThinCondensed/900_60.json`,
+            texture: `${PATH}/BoldNormal_to_ThinCondensed/900_60.png`
         },
         {
-            json: `${PATH}/BoldNormal_to_ThinCondensed/30_600.json`,
-            texture: `${PATH}/BoldNormal_to_ThinCondensed/30_600.png`
+            json: `${PATH}/BoldNormal_to_ThinCondensed/600_40.json`,
+            texture: `${PATH}/BoldNormal_to_ThinCondensed/600_40.png`
         },
         {
-            json: `${PATH}/BoldNormal_to_ThinCondensed/10_300.json`,
-            texture: `${PATH}/BoldNormal_to_ThinCondensed/10_300.png`
+            json: `${PATH}/BoldNormal_to_ThinCondensed/300_20.json`,
+            texture: `${PATH}/BoldNormal_to_ThinCondensed/300_20.png`
         },
         {
-            json: `${PATH}/BoldNormal_to_ThinCondensed/1_100.json`,
-            texture: `${PATH}/BoldNormal_to_ThinCondensed/1_100.png`
+            json: `${PATH}/BoldNormal_to_ThinCondensed/100_0.json`,
+            texture: `${PATH}/BoldNormal_to_ThinCondensed/100_0.png`
         },
     ],
     onTransitionLoaded
@@ -125,8 +125,6 @@ FontTransitions.addFontTransition('Bold_to_Thin',
     ],
     onTransitionLoaded
 );
-
-
 
 FontTransitions.addFontTransition('BoldNormal_to_BoldCondensed',
     [{
@@ -161,6 +159,40 @@ FontTransitions.addFontTransition('ThinCondensed_to_BoldCondensed',
         {
             json: `${PATH}/ThinCondensed_to_BoldCondensed/100_1.json`,
             texture: `${PATH}/ThinCondensed_to_BoldCondensed/100_1.png`
+        },
+    ],
+    onTransitionLoaded
+);
+
+FontTransitions.addFontTransition('BoldWide_to_ThinCondensed',
+    [{
+            json: `${PATH}/BoldWide_to_ThinCondensed/900_100.json`,
+            texture: `${PATH}/BoldWide_to_ThinCondensed/900_100.png`
+        },
+        {
+            json: `${PATH}/BoldWide_to_ThinCondensed/600_60.json`,
+            texture: `${PATH}/BoldWide_to_ThinCondensed/600_60.png`
+        },
+        {
+            json: `${PATH}/BoldWide_to_ThinCondensed/300_30.json`,
+            texture: `${PATH}/BoldWide_to_ThinCondensed/300_30.png`
+        },
+        {
+            json: `${PATH}/BoldWide_to_ThinCondensed/100_0.json`,
+            texture: `${PATH}/BoldWide_to_ThinCondensed/100_0.png`
+        },
+    ],
+    onTransitionLoaded
+);
+
+FontTransitions.addFontTransition('LightCondensed_to_ThinCondensed',
+    [{
+            json: `${PATH}/LightCondensed_to_ThinCondensed/140_0.json`,
+            texture: `${PATH}/LightCondensed_to_ThinCondensed/140_0.png`
+        },
+        {
+            json: `${PATH}/LightCondensed_to_ThinCondensed/100_0.json`,
+            texture: `${PATH}/LightCondensed_to_ThinCondensed/100_0.png`
         },
     ],
     onTransitionLoaded

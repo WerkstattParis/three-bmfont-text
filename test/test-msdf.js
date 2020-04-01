@@ -184,20 +184,20 @@ function start() {
 
     FontTransitions.addFontTransition('BoldNormal_to_ThinCondensed',
         [{
-                json: "fnt/transitions/BoldNormal_to_ThinCondensed/40_900.json",
-                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/40_900.png"
+                json: "fnt/transitions/BoldNormal_to_ThinCondensed/900_60.json",
+                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/900_60.png"
             },
             {
-                json: "fnt/transitions/BoldNormal_to_ThinCondensed/30_600.json",
-                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/30_600.png"
+                json: "fnt/transitions/BoldNormal_to_ThinCondensed/600_40.json",
+                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/600_40.png"
             },
             {
-                json: "fnt/transitions/BoldNormal_to_ThinCondensed/10_300.json",
-                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/10_300.png"
+                json: "fnt/transitions/BoldNormal_to_ThinCondensed/300_20.json",
+                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/300_20.png"
             },
             {
-                json: "fnt/transitions/BoldNormal_to_ThinCondensed/1_100.json",
-                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/1_100.png"
+                json: "fnt/transitions/BoldNormal_to_ThinCondensed/100_0.json",
+                texture: "fnt/transitions/BoldNormal_to_ThinCondensed/100_0.png"
             },
         ],
         onTransitionLoaded
@@ -264,13 +264,48 @@ function start() {
         onTransitionLoaded
     );
 
+    FontTransitions.addFontTransition('BoldWide_to_ThinCondensed',
+        [{
+                json: "fnt/transitions/BoldWide_to_ThinCondensed/900_100.json",
+                texture: "fnt/transitions/BoldWide_to_ThinCondensed/900_100.png"
+            },
+            {
+                json: "fnt/transitions/BoldWide_to_ThinCondensed/600_60.json",
+                texture: "fnt/transitions/BoldWide_to_ThinCondensed/600_60.png"
+            },
+            {
+                json: "fnt/transitions/BoldWide_to_ThinCondensed/300_30.json",
+                texture: "fnt/transitions/BoldWide_to_ThinCondensed/300_30.png"
+            },
+            {
+                json: "fnt/transitions/BoldWide_to_ThinCondensed/100_0.json",
+                texture: "fnt/transitions/BoldWide_to_ThinCondensed/100_0.png"
+            },
+        ],
+        onTransitionLoaded
+    );
+
+    FontTransitions.addFontTransition('LightCondensed_to_ThinCondensed',
+        [{
+                json: "fnt/transitions/LightCondensed_to_ThinCondensed/140_0.json",
+                texture: "fnt/transitions/LightCondensed_to_ThinCondensed/140_0.png"
+            },
+            {
+                json: "fnt/transitions/LightCondensed_to_ThinCondensed/100_0.json",
+                texture: "fnt/transitions/LightCondensed_to_ThinCondensed/100_0.png"
+            },
+        ],
+        onTransitionLoaded
+    );
+
+
 
     window.addEventListener('mousemove', onMouseMove, false);
 }
 
 function onTransitionLoaded() {
     nbrTransitionLoaded++;
-    if (nbrTransitionLoaded < 10) return;
+    if (nbrTransitionLoaded < 12) return;
 
     console.log(window.devicePixelRatio);
 
@@ -278,7 +313,7 @@ function onTransitionLoaded() {
     textArray.forEach((text, index) => {
         let instance = new FontVariableGL(
             text,
-            [FontTransitions.getFontTransition('Bold_to_Light')],
+            [FontTransitions.getFontTransition('LightCondensed_to_ThinCondensed')],
             function () {
                 console.log('mouseEnter')
             },
