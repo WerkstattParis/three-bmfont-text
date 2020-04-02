@@ -2,7 +2,7 @@ var assign = require('object-assign');
 
 module.exports = function createMSDFShader(opt) {
     opt = opt || {};
-    var opacity = typeof opt.opacity === 'number' ? opt.opacity : 1;
+    var color = typeof opt.color === 'number' ? opt.color : 1;
     var progress = typeof opt.progress === 'number' ? opt.progress : 1;
     var alphaTest = typeof opt.alphaTest === 'number' ? opt.alphaTest : 0.0001;
     var precision = opt.precision || 'highp';
@@ -12,14 +12,14 @@ module.exports = function createMSDFShader(opt) {
     // remove to satisfy r73
     delete opt.map
     delete opt.precision
-    delete opt.opacity
+    delete opt.color
     delete opt.tMapTo
     delete opt.tMapFrom
     delete opt.progress
 
     return assign({
         uniforms: {
-            opacity: { type: 'f', value: opacity },
+            color: { type: 'f', value: color },
             progress: { type: 'f', value: progress },
             tMapFrom: { type: 't', value: tMapFrom || new THREE.Texture() },
             tMapTo: { type: 't', value: tMapTo || new THREE.Texture() },
@@ -62,6 +62,7 @@ module.exports = function createMSDFShader(opt) {
         uniform float progress;
         uniform sampler2D tMapFrom;
         uniform sampler2D tMapTo;
+        uniform float color;
 
         float fill(float sd) {
             float aaf = fwidth(sd);
@@ -89,7 +90,7 @@ module.exports = function createMSDFShader(opt) {
             float alpha = aastep(msdfSample);
             // float alpha = fill(0.5 - msdfSample);
 
-            gl_FragColor = vec4(vec3(1.,1.,1.), alpha);
+            gl_FragColor = vec4(vec3(color), alpha);
         }`
 
 

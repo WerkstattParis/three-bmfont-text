@@ -305,6 +305,10 @@ function onTransitionLoaded() {
                 function () {
                     console.log('mouseLeave')
                 },
+                function () {
+                    console.log('click')
+                },
+                0 //letterSpacing
             );
             //instance.mesh.position.x = -window.innerWidth / 2;
             //instance.mesh.position.y = (-window.innerHeight / 2) + (20 * (index + 1)) + 300 * mainIndex;
@@ -324,6 +328,7 @@ function update() {
     inc += .15;
     textInstances.forEach((textInstance, index) => {
         textInstance.setProgress((Math.sin(inc + (index / 1)) + 1) / 2);
+        textInstance.setColor((Math.sin(inc + (index / 1)) + 1) / 2);
         // if (textInstancesetP> 0.5 ) { textInstance.currentTransition = textInstance.arrayTansition[1]; }
     })
 

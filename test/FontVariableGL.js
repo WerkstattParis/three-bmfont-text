@@ -4,9 +4,10 @@ var collector = require('../dataCollector.js')
 
 
 module.exports = class FontVariableGL {
-    constructor(text, arrayTansition, mouseEnterFn, mouseLeaveFn) {
+    constructor(text, arrayTansition, mouseEnterFn, mouseLeaveFn, mouseClickFn, letterSpacing = 0) {
         this.text = text;
         this.progress = 0;
+        this.color = 0;
         this.hovered = false;
 
         this.geometry = null;
@@ -15,19 +16,33 @@ module.exports = class FontVariableGL {
 
         this.mouseEnterFn = mouseEnterFn;
         this.mouseLeaveFn = mouseLeaveFn;
+        this.mouseClickFn = mouseClickFn;
         
-        this.arrayTansition.forEach((transition, index) => {
-            this.arrayTansition[index] = new TextTransition(this.text, transition);
-        });
+        for (let index = 0; index < this.arrayTansition.length; index++) {
+            this.arrayTansition[index] = new TextTransition(this.text, this.arrayTansition[index], letterSpacing);
+        }
 
         this.currentTransition = this.arrayTansition[0];
+
+        this._onClick = this.onClick.bind(this);
+        document.addEventListener('click', this._onClick)
+        
         this.createMesh();
+
     }
 
     mouseEnter(){
         if ( !this.hovered ){
             this.hovered = true;
             this.mouseEnterFn();
+        }
+    }
+
+    onClick() {
+        if (this.hovered) {
+            if (!!this.mouseClickFn) {
+                this.mouseClickFn();
+            }
         }
     }
 
@@ -43,9 +58,9 @@ module.exports = class FontVariableGL {
         let modulo = globalProgress % 1;
         let nbr = Math.floor(globalProgress);
 
-        if (nbr == this.currentTransition.nbrStep) {
+        if (nbr == this.currentTransition.nbrStep-1) {
             modulo = 0.999999;
-            nbr = this.currentTransition.nbrStep;
+            nbr = this.currentTransition.nbrStep-2;
         }
         this.mesh.material.uniforms.progress.value = modulo;
 
@@ -60,8 +75,17 @@ module.exports = class FontVariableGL {
     }
 
     setProgress(progress){
-        this.progress = progress;
-        this.render();
+        if( this.progress !== progress){
+            this.progress = progress;
+            this.render();
+        }
+    }
+
+    setColor(color) {
+        if (this.color !== color) {
+            this.color = color;
+            this.mesh.material.uniforms.color.value = this.color;
+        }
     }
 
     createMesh() {
@@ -81,6 +105,7 @@ module.exports = class FontVariableGL {
             side: THREE.DoubleSide,
             transparent: true,
             progress: 0,
+            color: 1,
         }))
 
         // var hauteurLigne = geom.layout
@@ -89,7 +114,7 @@ module.exports = class FontVariableGL {
 }
 
 class TextTransition {
-    constructor( text, transition) {
+    constructor(text, transition, letterSpacing) {
         // Transition
         this.arrayFontSteps = [];
         this.nbrStep = transition.array.length;
@@ -100,7 +125,8 @@ class TextTransition {
                 text: text,
                 font: transition.array[index].json,
                 align: 'left',
-                flipY: transition.array[index].texture.flipY
+                flipY: transition.array[index].texture.flipY,
+                letterSpacing: letterSpacing
             });
             this.arrayFontSteps[index].texture = transition.array[index].texture;
         }

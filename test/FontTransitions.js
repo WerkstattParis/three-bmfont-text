@@ -96,4 +96,7 @@ class Font {
     }
 }
 
-module.exports = new FontTransitions();
+const fontTransitionInstance = new FontTransitions();
+Object.freeze(fontTransitionInstance);
+
+module.exports = fontTransitionInstance; 
