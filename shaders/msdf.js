@@ -2,8 +2,9 @@ var assign = require('object-assign');
 
 module.exports = function createMSDFShader(opt) {
     opt = opt || {};
-    var opacity = typeof opt.opacity === 'number' ? opt.opacity : 1;
+    var color = typeof opt.color === 'number' ? opt.color : 1;
     var progress = typeof opt.progress === 'number' ? opt.progress : 1;
+    var skew = typeof opt.progress === 'number' ? opt.skew : 0;
     var alphaTest = typeof opt.alphaTest === 'number' ? opt.alphaTest : 0.0001;
     var precision = opt.precision || 'highp';
     var tMapFrom = opt.tMapFrom;
@@ -12,15 +13,17 @@ module.exports = function createMSDFShader(opt) {
     // remove to satisfy r73
     delete opt.map
     delete opt.precision
-    delete opt.opacity
+    delete opt.color
     delete opt.tMapTo
     delete opt.tMapFrom
     delete opt.progress
+    delete opt.skew
 
     return assign({
         uniforms: {
-            opacity: { type: 'f', value: opacity },
+            color: { type: 'f', value: color },
             progress: { type: 'f', value: progress },
+            skew: { type: 'f', value: skew },
             tMapFrom: { type: 't', value: tMapFrom || new THREE.Texture() },
             tMapTo: { type: 't', value: tMapTo || new THREE.Texture() },
         },
@@ -29,6 +32,7 @@ module.exports = function createMSDFShader(opt) {
         uniform mat4 modelViewMatrix;
         uniform mat4 projectionMatrix;
         uniform float progress;
+        uniform float skew;
 
         attribute vec2 uv;
         attribute vec2 uvTo;
@@ -43,10 +47,9 @@ module.exports = function createMSDFShader(opt) {
 
             vUvFrom = uv;
             vUvTo = uvTo;
-                
             vec3 endPostion = mix(position, positionTo, progress );
-                
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(endPostion.xy, 0., 1.);
+            mat4 skew = mat4(1.,0.,0.,0.,-skew,1.,0.,0.,0.,0.,1.,0.,0.,0.,0.,1.);
+            gl_Position = projectionMatrix * modelViewMatrix * skew * vec4(endPostion.xy, 0., 1.);
         }`,
 
         fragmentShader: `
@@ -62,6 +65,7 @@ module.exports = function createMSDFShader(opt) {
         uniform float progress;
         uniform sampler2D tMapFrom;
         uniform sampler2D tMapTo;
+        uniform float color;
 
         float fill(float sd) {
             float aaf = fwidth(sd);
@@ -89,7 +93,7 @@ module.exports = function createMSDFShader(opt) {
             float alpha = aastep(msdfSample);
             // float alpha = fill(0.5 - msdfSample);
 
-            gl_FragColor = vec4(vec3(1.,1.,1.), alpha);
+            gl_FragColor = vec4(vec3(color), alpha);
         }`
 
 
